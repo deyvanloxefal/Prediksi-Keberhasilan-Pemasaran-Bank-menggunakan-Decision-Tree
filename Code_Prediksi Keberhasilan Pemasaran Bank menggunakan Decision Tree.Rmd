@@ -1,0 +1,70 @@
+---
+title: 'Prediksi Keberhasilan Pemasaran Bank menggunakan Decision Tree: Studi Kasus
+  Dataset UCL'
+author: "Kelompok 3"
+output: html_document
+---
+## Memuat library yang diperlukan
+library(rpart): Fungsi ini digunakan untuk memuat library "rpart", yang merupakan library utama untuk membangun model Decision Tree.
+library(rpart.plot): Fungsi ini digunakan untuk memuat library "rpart.plot", yang menyediakan fungsi untuk memvisualisasikan pohon keputusan yang dihasilkan.
+library(ggplot2): Fungsi ini digunakan untuk memuat library "ggplot2", yang digunakan untuk memvisualisasikan hasil prediksi dan sebaran kelas pada data uji.
+```{r}
+library(rpart)
+library(rpart.plot)
+library(ggplot2)
+```
+## Membaca dataset
+```{r}
+data <- read.csv("bank/bank-full.csv", sep=";", header=TRUE)
+```
+## Preprocessing Data
+Mengkonversi variabel target 'y' menjadi faktor dengan nilai 'yes' dan 'no'. Ini diperlukan untuk melabeli variabel target sebagai variabel kategori yang akan digunakan dalam analisis klasifikasi.
+```{r}
+data$y <- factor(data$y, levels = c("no", "yes"))
+```
+## Membagi dataset menjadi data latih dan data uji
+```{r}
+set.seed(123)
+indices <- sample(1:nrow(data), nrow(data)*0.7)
+train_data <- data[indices, ]
+test_data <- data[-indices, ]
+```
+## Membentuk Decision Tree
+Membentuk model Decision Tree menggunakan fungsi rpart dengan variabel target "y" dan seluruh variabel prediktor pada data latih.
+```{r}
+tree_model <- rpart(y ~ ., data = train_data, method = "class")
+```
+## Visualisasi Decision Tree
+```{r}
+rpart.plot(tree_model, type = 4, extra = 102, under = TRUE, tweak = 1, cex = 0.7)
+```
+## Memprediksi kelas pada data uji
+Melakukan prediksi kelas pada data uji menggunakan model Decision Tree yang telah dibentuk.
+```{r}
+predictions <- predict(tree_model, newdata = test_data, type = "class")
+```
+## Evaluasi performa model
+Menghitung akurasi model
+```{r}
+accuracy <- sum(predictions == test_data$y) / nrow(test_data)
+cat("Akurasi model: ", round(accuracy * 100, 2), "%\n")
+```
+## Visualisasi hasil prediksi dan sebaran kelas pada data uji
+memvisualisasikan hasil prediksi dan sebaran kelas pada data uji menggunakan library ggplot2. Dalam kode ini, kita menggunakan grafik batang untuk menampilkan sebaran kelas aktual dan prediksi. Fungsi-fungsi berikutnya digunakan untuk menyesuaikan tampilan grafik batang.
+```{r}
+results <- data.frame(Actual = test_data$y, Predicted = predictions)
+ggplot(results, aes(x = Actual, fill = Predicted)) +
+  geom_bar() +
+  labs(x = "Kelas", y = "Frekuensi", fill = "Prediksi") +
+  scale_fill_manual(values = c("#00AFBB", "#E7B800")) +
+  ggtitle("Prediksi Kelas pada Data Uji") +
+  theme_minimal()
+```
+
+
+
+
+
+
+
+
